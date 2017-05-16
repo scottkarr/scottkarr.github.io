@@ -1,0 +1,93 @@
+<head>
+  <!-- Plotly.js -->
+   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+
+<body>
+
+<p1>
+The chart below illustrates the relationship between NYC students that passed the
+English Language Arts state test and the geographic district that their school
+belongs to.  Bubble size and color are additional dimensions that represent the size
+of the school population and the Borough in which the school resides.
+</p1>
+
+<br> <br />
+
+
+<p1>
+To complete the chart, I would like to get Year and Grade dropdown functionality
+working so that the end users can interactively explore the charts built-in
+relationships over time and by grade.
+<p1>
+
+<br> <br />
+
+<p1>
+Unfortunately, I was not able to bind the drop-down to an event listener.  I was
+unable to find model code that captures the change event and redraws the graph
+properly.
+<p1>
+</p1>
+
+<br> <br />
+
+  <div id="dropdowndiv">
+        Year: <select id="dropdown" >
+            <option value="2016" selected="selected">2016</option>
+            <option value="2015">2015</option>
+            <option value="2014">2014</option>
+        </select>
+  </div>
+
+  <div id="myDiv" style="width: 880px; height: 800px;"><!-- Plotly chart will be drawn inside this DIV --></div>
+
+  <script>
+    //https://stackoverflow.com/questions/1085801/get-selected-value-in-dropdown-list-using-javascript
+    Plotly.d3.csv('https://raw.githubusercontent.com/scottkarr/IS608FinalProject/master/data/ELAScoresBySchool.csv', function(err, rows){
+
+      function unpack(rows, key) {
+        return rows.map(function(row) { return row[key]; });
+      }
+
+      var YEAR
+      var e = document.getElementById("dropdown")
+            YEAR = parseInt(e.options[e.selectedIndex].value,10);
+
+      //var YEAR = 2016;
+      var GRADE = 8;
+      var boroughs = ['BRONX', 'BROOKLYN', 'QUEENS', 'MANHATTAN', 'STATEN ISLAND'];
+      var POP_TO_PX_SIZE = .25;
+      var data = boroughs.map(function(Borough) {
+      var rowsFiltered = rows.filter(function(row) {
+          return (row.Borough === Borough) && (+row.Year === YEAR) && (+row.Grade === GRADE);
+      });
+
+        return {
+            mode: 'markers',
+            name: Borough,
+            x: unpack(rowsFiltered, 'District'),
+            y: unpack(rowsFiltered, 'Lvl_Pass_Pct'),
+            text: unpack(rowsFiltered, 'School'),
+            marker: {
+                sizemode: 'area',
+                size: unpack(rowsFiltered, 'Headcount'),
+                sizeref: POP_TO_PX_SIZE
+            }
+        };
+      });
+
+      var layout = {
+        xaxis: {title: 'District'},
+        yaxis: {title: 'Percentage Passed ELA'},//, type: 'log'},
+        margin: {t: 5},
+        hovermode: 'closest'
+      };
+
+      var gd = document.getElementById('myDiv');
+      e.addEventListener("change", parseInt(e.options[e.selectedIndex].value,10) , false);
+      Plotly.plot(gd, data, layout, {showLink: false});
+
+      });
+  </script>
+</body>
